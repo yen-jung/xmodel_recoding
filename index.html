@@ -2,6 +2,46 @@
 <html>
     <head>
         <title>Hello Three.js</title>
-        <script type="module" src="./index.js"></script>
+        <link rel="stylesheet" type="text/css" href="./index.css">
+        <script src="https://kit.fontawesome.com/daa834e337.js"crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha384-vk5WoKIaW/vJyUAd9n/wmopsmNhiy+L2Z+SBxGYnUkunIxVxAv/UtMOhba/xskxh" crossorigin="anonymous"></script>
+        
     </head>
+    <body>
+        <script type="module" src="index.js"></script>
+        <div class="sidenav">
+
+            <label id="clickMe"class='footer-item' type='button' onclick="doFunction()">
+              <div class='footer-icon'><i class='fa fa-upload'></i></div>
+              <div class='footer-title'>upload</div>
+            </label>
+            <div class='footer-item' type="button" id='connectorBtn'>
+              <div class='footer-icon'><i class='fa fa-plug'></i></div>
+              <div class='footer-title'>connector</div>
+            </div>
+            <div class='footer-item' id='addComponentBtn'>
+              <div class='footer-icon'><i class='fa fa-cogs'></i></div>
+              <div class='footer-title'>Component</div>
+            </div>
+            <div class='footer-item' id='make_pair' href="#letmeopen">
+              <div class='footer-icon'><i class='fa fa-link'></i></div>
+              <div class='footer-title'>pair</div>
+            </div>
+
+           
+            <div class="popup-wrap" id="letmeopen">
+              <div class="popup-box transform-out">
+                <h2>系統</h2>
+                <input placeholder="Ex:冷水" class="t1" id='system_name' style="width:300px; height:50px;">
+                <h2>功能</h2>
+                <input placeholder="Ex:回水" class="t1" id='function_name' style="width:300px; height:50px;" >
+                <a class="close-btn popup-close" href="#">x</a>
+              </div>
+            </div>
+          </div>
+          
+          
+    </body>
+
 </html>
