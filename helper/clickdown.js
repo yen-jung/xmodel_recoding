@@ -5,12 +5,16 @@ let _scene;
 let enableSelection = false;
 let mutiselect = false;
 let objects = [];
+let pair_of_connector=[]
 
 
 function onKeyDown(event) {
 
     enableSelection = (event.keyCode === 16) ? true : false;
     mutiselect = (event.keyCode === 17) ? true : false;
+    for (let i = 0; i < objects.length; i++) {
+        objects[i].material.emissive.setHex(objects[i].currentHex);
+    }
 }
 function onKeyUp() {
 
@@ -120,9 +124,10 @@ function InitDragControls(event, controls, scene) {
           scene.add(_group);
           controls.transformGroup = true;
           draggableObjects.push(_group);
-          console.log(_group)
+          pair_of_connector=[];
+          pair_of_connector.push(_group);
 
     }
 }
 
-export { InitDragControls, onKeyUp, onKeyDown}
+export { InitDragControls, onKeyUp, onKeyDown,pair_of_connector}

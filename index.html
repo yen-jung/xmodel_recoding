@@ -11,10 +11,13 @@
     <body>
         <script type="module" src="index.js"></script>
         <div class="sidenav">
-
             <label id="clickMe"class='footer-item' type='button' onclick="doFunction()">
               <div class='footer-icon'><i class='fa fa-upload'></i></div>
               <div class='footer-title'>upload</div>
+            </label>
+            <label id="exportBtn"class='footer-item' type='button'>
+              <div class='footer-icon'><i class='fa fa-download'></i></div>
+              <div class='footer-title'>export</div>
             </label>
             <div class='footer-item' type="button" id='connectorBtn'>
               <div class='footer-icon'><i class='fa fa-plug'></i></div>
@@ -23,6 +26,10 @@
             <div class='footer-item' id='addComponentBtn'>
               <div class='footer-icon'><i class='fa fa-cogs'></i></div>
               <div class='footer-title'>Component</div>
+            </div>
+            <div class='footer-item' id='boundary'>
+              <div class='footer-icon'><i class='fa fa-cube'></i></div>
+              <div class='footer-title'>bound</div>
             </div>
             <div class='footer-item' id='make_pair' href="#letmeopen">
               <div class='footer-icon'><i class='fa fa-link'></i></div>
@@ -37,11 +44,12 @@
                 <h2>功能</h2>
                 <input placeholder="Ex:回水" class="t1" id='function_name' style="width:300px; height:50px;" >
                 <a class="close-btn popup-close" href="#">x</a>
+                <input class="surebutton" type="button" id="surebtn"  value="確定" name="按鈕名稱" style="width:100px;height:40px;font-size:16px">
               </div>
             </div>
           </div>
           
-          
+           
     </body>
 
 </html>

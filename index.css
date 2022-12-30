@@ -131,4 +131,25 @@ body {
     -webkit-transform: translate(-50%, -50%) scale(0.5);
     transform: translate(-50%, -50%) scale(0.5);
   }
+
+  .surebutton {
+    border:0;
+    background-color:#afb5c0;
+    color:#fff;
+    border-radius:10px;
+    cursor:pointer;
+    position:absolute;
+    top: 380px;
+    right:50px;
+  }
   
+  .surebutton:hover{
+    color:#003C9D;
+    background-color:#fff;
+    border:2px #003C9D solid;
+  }
+  .selectBox {
+    border: 1px solid #55aaff;
+    background-color: rgba(75, 160, 255, 0.3);
+    position: fixed;
+  } 

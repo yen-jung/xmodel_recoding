@@ -2,6 +2,7 @@ import * as THREE from "./node_modules/three/build/three.module.js";
 import { Helper } from './helper/helper.js';
 import { Window_resize } from './helper/Window_resize.js';
 import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
+import { GLTFExporter } from './node_modules/three/examples/jsm/exporters/GLTFExporter.js';
 import { DragControls } from './node_modules/three/examples/jsm/controls/DragControls.js';
 import * as Public_tool from './helper/public_tool.js';
 import * as Click_down from './helper/clickdown.js';
@@ -20,6 +21,10 @@ let loadedScene=null;
 let loadedMeshes=null
 let load;
 
+
+const ViewerUI = {
+  exportFile:document.getElementById('exportBtn')
+}
 
 function InitScene() {
     //創建場景
@@ -142,6 +147,55 @@ function InitRender() {
     })
   }
 
+  function exportGLTF(input){
+    const exporter =new GLTFExporter();
+    const options = {
+      trs: true,
+      onlyVisible: true,
+      binary: true,
+      maxTextureSize: 8192
+    };
+
+    
+    exporter.parse(input, function (result){
+      if (result instanceof ArrayBuffer) {
+  
+        saveArrayBuffer(result, 'scene.glb');
+  
+    } else {
+  
+        const output = JSON.stringify(result, null, 2);
+        console.log(output);
+        saveString(output, 'scene.gltf');
+  
+    }
+  
+  }, options);
+  }
+  const link = document.createElement( 'a' );
+  link.style.display = 'none';
+  document.body.appendChild( link ); 
+  function save(blob,fileName){
+    link.href=URL.createObjectURL(blob);
+    link.download=fileName;
+    link.click();
+  }
+  
+  function saveString(text, filename) {
+    save(new Blob([text], { type: 'text/plain' }), filename);
+  }
+  
+  function saveArrayBuffer(buffer,filename){
+    save(new Blob([buffer],{ type: 'application/octet-stream' }),filename)
+  }
+  
+  
+  ViewerUI.exportFile.onclick =function exportScene1() {
+  
+    exportGLTF( scene );
+  
+  }
+
   $("#make_pair").click(function() {
     var href = $(this).attr("href")
     $(href).fadeIn(250);
@@ -175,12 +229,12 @@ function InitRender() {
     window.addEventListener( 'keyup', Click_down.onKeyUp );
     
   
-    let Create_Conector= new AddObject(scene,"connectorBtn");
+    let Create_Conector= new AddObject(scene,"connectorBtn","addComponentBtn","boundary",renderer);
    
     controls = new DragControls([...objects], camera, renderer.domElement);
     document.addEventListener('click',event=> {Click_down.InitDragControls(event,controls,scene)});
     
-    let makepair=new MakePair('make_pair')
+    let makepair=new MakePair('surebtn','system_name','function_name')
     
     const loader = new GLTFLoader();
     document.getElementById("clickMe").onclick = doFunction;
@@ -196,9 +250,7 @@ function InitRender() {
 
     const gltfLoad = new GLTFLoader;
     gltfLoad.load('空.gltf', function (gltfScene) {
- 
-    
-    
+    Public_tool.IsGroup(gltfScene.scene);
     scene.add(gltfScene.scene);
   
   });
