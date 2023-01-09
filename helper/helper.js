@@ -24,7 +24,7 @@ class Helper{
             scene.add(ambientLight);
             // 簡單的 spotlight 
             let spotLight = new THREE.SpotLight(0xffffff);
-            spotLight.position.set(-40, 80, -10);
+            spotLight.position.set(129, 40, -40);
             spotLight.castShadow = true;
             spotLight.shadow.mapSize.width = 2000;
             spotLight.shadow.mapSize.height = 2000;

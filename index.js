@@ -20,10 +20,17 @@ let objects = [];
 let loadedScene=null;
 let loadedMeshes=null
 let load;
+let Create_Conector;
+let type='';
 
 
 const ViewerUI = {
-  exportFile:document.getElementById('exportBtn')
+  exportFile:document.getElementById('exportBtn'),
+  boundBtn:document.getElementById('boundary'),
+  lineBtn:document.getElementById('add_line'),
+  pairBtn:document.getElementById('make_pair'),
+  ComponentBtn:document.getElementById('addComponentBtn'),
+  connectorBtn:document.getElementById('connectorBtn')
 }
 
 function InitScene() {
@@ -36,8 +43,8 @@ function InitScene() {
 }
 
 function CreateCamera() {
-    // camera = new THREE.OrthographicCamera(window.innerWidth/-2,window.innerWidth/2, window.innerHeight/2,window.innerHeight/-2, 1, 1000);
-    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000000);
+    camera = new THREE.OrthographicCamera(window.innerWidth/-2,window.innerWidth/2, window.innerHeight/2,window.innerHeight/-2, 1, 1000);
+    // camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000000);
     camera.position.set(100, 200, 100);
     camera.lookAt(scene.position);
     scene.add(camera);
@@ -195,6 +202,15 @@ function InitRender() {
     exportGLTF( scene );
   
   }
+  function IsRotate(obj){
+    for(var i=0; i<obj.children.length;i++){
+      if(obj.children[i].rotation.x!=0){
+        obj.children[i].rotation.x=0;
+        obj.children[i].rotation.y=0;
+        obj.children[i].rotation.z=0;
+      }
+    }
+  }
 
   $("#make_pair").click(function() {
     var href = $(this).attr("href")
@@ -206,14 +222,35 @@ function InitRender() {
   $(".popup-close").click(function() {
     closeWindow();
   });
-  function closeWindow(){
+  function closeWindow(event){
     $(".popup-wrap").fadeOut(200);
     $(".popup-box").removeClass("transform-in").addClass("transform-out");
     event.preventDefault();
   }
-
   init();
 
+
+  ViewerUI.boundBtn.onclick=function NowType(){
+    type='add_bound';
+  }
+  ViewerUI.lineBtn.onclick=function NowType(){
+    type='add_bound';
+  }
+  ViewerUI.pairBtn.onclick=function NowType(){
+    type='add_bound';
+  }
+  ViewerUI.ComponentBtn.onclick=function NowType(){
+    type='add_bound';
+  }
+  ViewerUI.connectorBtn.onclick=function NowType(){
+    type='add_bound';
+  }
+
+  function keydown(e){
+    if (e.key === "Escape"){
+      type='';
+    }
+  }
   function init() {
     InitScene();
     CreateCamera();
@@ -221,19 +258,21 @@ function InitRender() {
     setControl();
     let window_resize = new Window_resize(camera, renderer);
     let helper = new Helper(scene, camera, renderer);
-    document.addEventListener('mousemove', event => { Public_tool.Get_MousePosition(event, camera, scene) });
+    document.addEventListener('mousemove', event => { Public_tool.Get_MousePosition(event, camera, scene)});
     // document.addEventListener('input',event=> {loadfile(event)});
-
-    
-    window.addEventListener( 'keydown',Click_down.onKeyDown );
+    window.addEventListener( 'keydown',Click_down.onKeyDown);
     window.addEventListener( 'keyup', Click_down.onKeyUp );
+    window.addEventListener( 'keydown',event=> {keydown(event)});
     
-  
-    let Create_Conector= new AddObject(scene,"connectorBtn","addComponentBtn","boundary",renderer);
-   
+    Create_Conector= new AddObject(scene,"connectorBtn","addComponentBtn","boundary",renderer,camera,"add_line");
     controls = new DragControls([...objects], camera, renderer.domElement);
-    document.addEventListener('click',event=> {Click_down.InitDragControls(event,controls,scene)});
-    
+    document.addEventListener('click',event=> 
+      { console.log(Public_tool.GetObject()[0])
+        if(type!='add_bound'){
+        Click_down.InitDragControls(event,controls,scene);
+        }
+      });
+  
     let makepair=new MakePair('surebtn','system_name','function_name')
     
     const loader = new GLTFLoader();
@@ -249,10 +288,10 @@ function InitRender() {
     }
 
     const gltfLoad = new GLTFLoader;
-    gltfLoad.load('空.gltf', function (gltfScene) {
+    gltfLoad.load('空(ytoz).gltf', function (gltfScene) {
     Public_tool.IsGroup(gltfScene.scene);
+    IsRotate(gltfScene.scene)
     scene.add(gltfScene.scene);
-  
   });
    
     
@@ -260,3 +299,5 @@ function InitRender() {
     
     render();
   }
+
+  export{type}

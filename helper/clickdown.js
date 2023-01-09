@@ -5,7 +5,8 @@ let _scene;
 let enableSelection = false;
 let mutiselect = false;
 let objects = [];
-let pair_of_connector=[]
+let pair_of_connector=[];
+let type;
 
 
 function onKeyDown(event) {
@@ -20,6 +21,8 @@ function onKeyUp() {
 
     enableSelection = false;
     mutiselect = false;
+
+    return type=' ';
 
 }
 
@@ -73,6 +76,7 @@ function IsObject(){
     }
 }
 function InitDragControls(event, controls, scene) {
+    
     event.preventDefault();
    _scene=scene;
    controls.object=[];
@@ -128,6 +132,8 @@ function InitDragControls(event, controls, scene) {
           pair_of_connector.push(_group);
 
     }
+
+
 }
 
-export { InitDragControls, onKeyUp, onKeyDown,pair_of_connector}
+export { InitDragControls, onKeyUp, onKeyDown,pair_of_connector,type}

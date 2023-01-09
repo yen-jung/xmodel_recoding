@@ -1,14 +1,18 @@
 import * as THREE from "../node_modules/three/build/three.module.js";
 import { GLTFLoader } from '../node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 import * as Public_tool from './public_tool.js';
+import * as index from '../index.js';
 import { SelectionBox } from '../node_modules/three/examples/jsm/interactive/SelectionBox.js';
 import { SelectionHelper } from '../node_modules/three/examples/jsm/interactive/SelectionHelper.js';
+import { LineMaterial } from '../node_modules/three/examples/jsm/lines/LineMaterial.js';
+import { LineGeometry } from '../node_modules/three/examples/jsm/lines/LineGeometry.js';
 
 let ViewerUI;
 let scene,camera,renderer;
 let connector = false;
 let  _component= false;
 let _bound=false;
+let  _line= false;
 let component;
 let mouse_position;
 let r = 90;
@@ -17,20 +21,27 @@ let selectionBox = new SelectionBox(camera, scene);
 let helperbox;
 let sp = [];
 let ep = [];
+let raycaster = new THREE.Raycaster();
+let mouse = new THREE.Vector2();
+let intersects;
+let type;
 
 class AddObject {
-    constructor(_scene, _connector,addComponent,bound,_renderer) {
+    constructor(_scene, _connector,addComponent,bound,_renderer,_camera,line) {
         scene = _scene;
-        renderer=_renderer
+        renderer=_renderer;
+        camera=_camera;
         ViewerUI = {
             connectorBtn: document.getElementById(_connector),
             addComponentBtn: document.getElementById(addComponent),
-            boundBtn:document.getElementById(bound)
+            boundBtn:document.getElementById(bound),
+            lineBtn:document.getElementById(line)
         }
         ViewerUI.connectorBtn.addEventListener('click', event => { connector = true;activate() });
         ViewerUI.addComponentBtn.addEventListener('click', event => { _component = true;activate() });
+        ViewerUI.lineBtn.addEventListener('click', event => {Create_Line()});
         document.addEventListener('mousemove',event => { onPointerMove(event)});
-        ViewerUI.boundBtn.addEventListener('click',event => {_bound=true;helperbox = new SelectionHelper(renderer, 'selectBox');});
+        ViewerUI.boundBtn.addEventListener('click',event => {_bound=true; helperbox = new SelectionHelper(renderer, 'selectBox'); activate();return type});
         document.addEventListener('pointerdown', event => { GetStartpoint(event)});
         document.addEventListener('pointerup', event => { GetEndpoint(event)});
       
@@ -48,13 +59,13 @@ class AddObject {
         }
 
 
-        function clickDown() {
+        function clickDown(type) {
             if (connector&&Public_tool.intersects.length > 0 && Public_tool.intersects[0].object.name != 'helper' && Public_tool.intersects[0].object.name != 'Axes') {
                 CreateConector();
             }
-            else if (_component==true&& Public_tool.intersects.length > 0  && Public_tool.intersects[0].object.name != 'helper' && Public_tool.intersects[0].object.name != 'Axes') {
+            else if (_component==true&&Public_tool.intersects.length > 0  && Public_tool.intersects[0].object.name != 'helper' && Public_tool.intersects[0].object.name != 'Axes') {
                 AddCompoent();
-              }
+            }
         }
         function CreateConector() {
             if (Public_tool.intersects[0] !== null) {
@@ -88,13 +99,13 @@ class AddObject {
         }
         function onKeyDown(e) {
             if (e.key === "Escape"){
-                dispose();
-                connector=false;
-                _component=false;
                 _bound=false;
                 if(helperbox){
                   helperbox.dispose();
                 }
+                dispose();
+                connector=false;
+                _component=false;
             }
         }
         function onPointerMove(){
@@ -126,9 +137,8 @@ class AddObject {
         }
         function createBound(ep,sp) {
             let l = ep[0] - sp[0];
-            
-            console.log(ep)
-            const cube = new THREE.BoxGeometry(Math.abs(l).x, 20, Math.abs(l).z);
+            let w = ep[2] - sp[2];
+            const cube = new THREE.BoxGeometry(Math.abs(l), 20, Math.abs(w));
             const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0xbffebf, transparent: true, opacity: 0.8 });
             const bound = new THREE.Mesh(cube, cubeMaterial);
             bound.name = "cube";
@@ -138,25 +148,46 @@ class AddObject {
             bound.castShadow = true;
             bound.receiveShadow = true;
             scene.add(bound);
+            return type;
           }
           function GetStartpoint(event){
-            if(_bound){
+            if(_bound ){
               selectionBox.startPoint.set((event.clientX / window.innerWidth) * 2 - 1,- (event.clientY / window.innerHeight) * 2 + 1,0.5);
+              mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+              mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+              raycaster.setFromCamera(mouse, camera);
+              intersects = raycaster.intersectObjects(scene.children, true);
               sp = [];
-              sp.push(Public_tool.intersects[0].point.x, 20, Public_tool.intersects[0].point.z);
+              sp.push(intersects[0].point.x, 20, intersects[0].point.z);
             }
           }
           function GetEndpoint(event){
-            selectionBox.endPoint.set((event.clientX / window.innerWidth) * 2 - 1,- (event.clientY / window.innerHeight) * 2 + 1,0.5);
-            if (_bound) {
+            if (_bound ) {
+              selectionBox.endPoint.set((event.clientX / window.innerWidth) * 2 - 1,- (event.clientY / window.innerHeight) * 2 + 1,0.5);
+              mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+              mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+              raycaster.setFromCamera(mouse, camera);
+              intersects = raycaster.intersectObjects(scene.children, true);
               ep=[];
-              ep.push(Public_tool.intersects[0].point.x, 20, Public_tool.intersects[0].point.z);
-              console.log(ep)
+              ep.push(intersects[0].point.x, 20, intersects[0].point.z);
               createBound(ep,sp);
             }
           }
-    }
 
+          function Create_Line(){
+            const material = new THREE.LineBasicMaterial( { color: 0x24afb2,linewidth: 12 } );
+            const points = [];
+            points.push( new THREE.Vector3( 1, 20, -5 ) );
+            points.push( new THREE.Vector3( 5, 20, -5 ) );
+            points.push( new THREE.Vector3( 5, 15, -15 ) );
+            points.push( new THREE.Vector3( 50, 20, -10 ) );
+            points.push( new THREE.Vector3( 80, 20, -30 ) );
+            const geometry = new THREE.BufferGeometry().setFromPoints( points );
+            const line = new THREE.Line( geometry, material );
+            scene.add( line );
+          }
+          
+    }
 }
 
-export { AddObject,connector}
+export { AddObject,connector,type}
