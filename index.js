@@ -12,17 +12,30 @@ import { ViewCube } from "./ViewCube.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.121.1/examples/jsm/controls/OrbitControls.js";
 import { MOUSE } from "./node_modules/three/build/three.module.js";
 import {MakePair} from './helper/Make_Pair.js';
+import {GUI} from "./node_modules/dat.gui/build/dat.gui.module.js";
 
 let camera, scene, renderer;
 let controller;
 let controls;
 let objects = [];
+let allobjects=[];
 let loadedScene=null;
 let loadedMeshes=null
 let load;
 let Create_Conector;
 let type='';
+let pointLight = new THREE.PointLight(0xffffff, 0.2);
 
+let params={
+  clipIntersection: true,
+  planeConstant: 0,
+  showHelpers: false
+}
+let clipPlanes = [
+  new THREE.Plane(new THREE.Vector3(1, 0, 0), 0),
+  new THREE.Plane(new THREE.Vector3(0, -1, 0), 0),
+  new THREE.Plane(new THREE.Vector3(0, 0, -1), 0)
+];
 
 const ViewerUI = {
   exportFile:document.getElementById('exportBtn'),
@@ -30,7 +43,8 @@ const ViewerUI = {
   lineBtn:document.getElementById('add_line'),
   pairBtn:document.getElementById('make_pair'),
   ComponentBtn:document.getElementById('addComponentBtn'),
-  connectorBtn:document.getElementById('connectorBtn')
+  connectorBtn:document.getElementById('connectorBtn'),
+  clipBtn:document.getElementById('add_clip')
 }
 
 function InitScene() {
@@ -48,6 +62,8 @@ function CreateCamera() {
     camera.position.set(100, 200, 100);
     camera.lookAt(scene.position);
     scene.add(camera);
+    camera.add(pointLight);
+
 }
 
 function InitRender() {
@@ -212,6 +228,11 @@ function InitRender() {
     }
   }
 
+  ViewerUI.clipBtn.onclick= function test(){
+    document.getElementById("myDropdown").classList.toggle("show");
+    
+}
+
   $("#make_pair").click(function() {
     var href = $(this).attr("href")
     $(href).fadeIn(250);
@@ -227,6 +248,8 @@ function InitRender() {
     $(".popup-box").removeClass("transform-in").addClass("transform-out");
     event.preventDefault();
   }
+
+  
   init();
 
 
@@ -263,7 +286,65 @@ function InitRender() {
     window.addEventListener( 'keydown',Click_down.onKeyDown);
     window.addEventListener( 'keyup', Click_down.onKeyUp );
     window.addEventListener( 'keydown',event=> {keydown(event)});
+
+    const gltfLoad = new GLTFLoader;
+    gltfLoad.load('空.gltf', function (gltfScene) {
+    // gltfScene.scene.scale.set(0.00328, 0.00328, 0.00328);
+    Public_tool.IsGroup(gltfScene.scene);
     
+    IsRotate(gltfScene.scene);
+    scene.add(gltfScene.scene);
+  });
+  
+    renderer.localClippingEnabled = true;
+    let group = new THREE.Group();
+    for (let i = 0; i <= 30; i += 2) {
+      let geometry = new THREE.SphereGeometry(i / 30, 48, 24);
+      let material = new THREE.MeshLambertMaterial({
+        color: new THREE.Color().setHSL(Math.random(), 0.5, 0.5),
+        side: THREE.DoubleSide,
+        clippingPlanes: clipPlanes,
+        // 更改剪裁平面的行为，以便仅剪切其交叉点，而不是它们的并集。默认值为 false。
+        // 设置为true后剪切交集而不是并集
+        clipIntersection: params.clipIntersection
+      });
+
+      group.add(new THREE.Mesh(geometry, material));
+    }
+    scene.add(group);
+    
+    let helpers = new THREE.Group();
+    helpers.add(new THREE.PlaneHelper(clipPlanes[0], 20, 0xff0000));
+    helpers.add(new THREE.PlaneHelper(clipPlanes[1], 20, 0x00ff00));
+    helpers.add(new THREE.PlaneHelper(clipPlanes[2], 20, 0x0000ff));
+    helpers.visible = false;
+    scene.add(helpers);
+    let gui = new GUI();
+
+    gui.add(params, 'clipIntersection').name('clip intersection').onChange(value=>{
+
+      /*for(let item in group.children){
+        item.material.clipIntersection = value;
+      }*/
+
+      let children = allobjects.children;
+      
+      for (let i = 0; i < children.length; i++) {
+        children[i].material.clipIntersection = value;
+      }
+
+    });
+    gui.add(params, 'planeConstant', -1, 10).step(0.1).name('plane constant').onChange(value=>{
+
+      for (let i = 0; i < clipPlanes.length; i++) {
+        clipPlanes[i].constant = value;
+      }
+    });
+
+    gui.add(params, 'showHelpers').name('show helpers').onChange(value=>{
+      helpers.visible = value;
+    });
+
     Create_Conector= new AddObject(scene,"connectorBtn","addComponentBtn","boundary",renderer,camera,"add_line");
     controls = new DragControls([...objects], camera, renderer.domElement);
     document.addEventListener('click',event=> 
@@ -287,12 +368,7 @@ function InitRender() {
       
     }
 
-    const gltfLoad = new GLTFLoader;
-    gltfLoad.load('空(ytoz).gltf', function (gltfScene) {
-    Public_tool.IsGroup(gltfScene.scene);
-    IsRotate(gltfScene.scene)
-    scene.add(gltfScene.scene);
-  });
+    
    
     
     
